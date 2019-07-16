@@ -127,3 +127,35 @@ they were derived from.
 ### Route
 
 A `Route` entity will get the name of its related `Operation` object.
+
+# Security
+
+The `security` property can be defined on the top-level `openapi` object as well
+as on `operation` objects. The information contained cannot be directly mapped
+onto Kong, due to the logical and/or nature of how the specs have been set up.
+
+To overcome this Kong will only accept a single `securityScheme` from the `security`
+property.
+
+The additional properties that Kong supports on its plugins can be configured
+by using custom extensions. The custom extensions are `x-kong-security-<plugin-name>`.
+
+Supported types are:
+
+- `oauth2`
+    - except for the implicit flow
+    - implemented using the Kong plugin `openid-connect`
+    - extended by: `x-kong-security-openid-connect`
+- `openIdConnect`
+    - implemented using the Kong plugin `openid-connect`
+    - extended by: `x-kong-security-openid-connect`
+- `apiKey`
+    - except for the `in` property, since the Kong plugin will by default
+      look in header and query already. Cookie is not supported.
+    - implemented using the Kong plugin `key-auth`
+    - extended by: `x-kong-security-key-auth`
+- `http`
+    - only `Basic` scheme is supported
+    - implemented using the Kong plugin `basic-auth`
+    - extended by: `x-kong-security-basic-auth`
+

@@ -90,8 +90,12 @@ do
       }
 
     elseif type_obj == "operation" then
-      registry[key] = assert(value1.strip_path ~= nil, "expected first value to be a Route")
+      registry[key] = assert(value1.strip_path ~= nil and value1 , "expected first value to be a Route")
       assert(value2 == nil, "did not expect a second value for 'operation'")
+
+    elseif type_obj == "securityRequirements" then
+      registry[key] = assert(value1.name ~= nil and value1.config ~= nil and value1 , "expected first value to be a Plugin")
+      assert(value2 == nil, "did not expect a second value for 'securityRequirements'")
 
     else
       error("cannot add object (key) of type: " .. type_obj, 2)
@@ -133,6 +137,27 @@ local function get_route_defaults(obj)
   return get_kong_defaults(obj, "x-kong-route-defaults", SERVERS_TYPES)
 end
 
+-- finds the next "x-kong-security-xxx" custom extension, no inheritance!
+-- extensions are `x-kong-security-xxx` where `xxx` is the plugin name used
+local function get_securityScheme_defaults(obj)
+  local t = obj.spec.type
+  local types = { [obj.type] = true } -- only allow our own type, so no inherited propertues
+  if t == "oauth2" then
+    return get_kong_defaults(obj, "x-kong-security-openid-connect", types)
+
+  elseif t == "openIdConnect" then
+    return get_kong_defaults(obj, "x-kong-security-openid-connect", types)
+
+  elseif t == "apiKey" then
+    return get_kong_defaults(obj, "x-kong-security-key-auth", types)
+
+  elseif t == "http" and obj.spec.scheme:lower() == "basic" then
+    return get_kong_defaults(obj, "x-kong-security-basic-auth", types)
+
+  else
+    error("unsupported security type: "..tostring(t))
+  end
+end
 
 --- returns all "servers" objects from the openapi spec.
 local function  get_all_servers(openapi)
@@ -194,6 +219,113 @@ local function convert_servers(openapi, options)
 end
 
 
+local create_security_plugin
+do
+  local creators = {
+
+    http = function(securityScheme)
+      if securityScheme.spec.scheme:lower() ~= "basic" then
+        return nil, "securityScheme http only supports `basic`, not: " .. securityScheme.spec.scheme
+      end
+      local plugin = {
+        name = "basic-auth",
+        config = get_securityScheme_defaults(securityScheme)
+      }
+      return plugin
+    end, -- http
+
+    apiKey = function(securityScheme)
+      if securityScheme.spec["in"] == "cookie" then
+        return nil, "apiKey in 'cookie' is not supported"
+      end
+      local plugin = {
+        name = "key-auth",
+        config = get_securityScheme_defaults(securityScheme)
+      }
+
+      plugin.config.key_names = plugin.config.key_names or {}
+      local duplicate = false
+      for _, key_name in ipairs(plugin.config.key_names) do
+        if key_name == securityScheme.spec.name then
+          duplicate = true
+        end
+      end
+      if not duplicate then
+        plugin.config.key_names[#plugin.config.key_names+1] = securityScheme.spec.name
+      end
+      return plugin
+    end, -- apiKey
+
+    openIdConnect = function(securityScheme)
+      local plugin = {
+        name = "openid-connect",
+        config = get_securityScheme_defaults(securityScheme),
+      }
+
+      plugin.config.issuer = securityScheme.spec.openIdConnectUrl
+
+      return plugin
+    end, -- openIdConnect
+
+    oauth2 = function(securityScheme)
+      -- oauth2 is also implementated using OIDC plugin
+      local plugin = {
+        name = "openid-connect",
+        config = get_securityScheme_defaults(securityScheme),
+      }
+
+      local auth_methods = plugin.config.auth_methods or {}
+      local authorizationUrl
+      local tokenUrl
+      local refreshUrl
+
+      for flow, flow_obj in pairs(securityScheme.flows) do
+
+        if     flow == "password"          then flow = "password"
+        elseif flow == "clientCredentials" then flow = "client_credentials"
+        elseif flow == "authorizationCode" then flow = "authorization_code"
+        else return nil, "unsupported flow: " .. flow
+        end
+
+        auth_methods[#auth_methods+1] = flow
+
+        if authorizationUrl and flow_obj.authorizationUrl then
+          if authorizationUrl ~= flow_obj.authorizationUrl then
+            return nil, "authorizationUrl must be identical for multiple flows"
+          end
+        end
+        authorizationUrl = flow_obj.authorizationUrl
+
+        if tokenUrl and flow_obj.tokenUrl then
+          if tokenUrl ~= flow_obj.tokenUrl then
+            return nil, "tokenUrl must be identical for multiple flows"
+          end
+        end
+        tokenUrl = flow_obj.tokenUrl
+
+        if refreshUrl and flow_obj.refreshUrl then
+          if refreshUrl ~= flow_obj.refreshUrl then
+            return nil, "refreshUrl must be identical for multiple flows"
+          end
+        end
+        refreshUrl = flow_obj.refreshUrl
+      end
+
+      plugin.config.auth_methods = auth_methods
+      plugin.config.paramx = authorizationUrl
+      plugin.config.paramy = tokenUrl
+      plugin.config.paramz = refreshUrl
+
+      return plugin
+    end,  -- oauth2
+  }
+
+  function create_security_plugin(securityScheme)
+    return creators[securityScheme.spec.type](securityScheme)
+  end
+end
+
+
 --- Converts "paths" object to "routes", and "plugins".
 -- @param openapi (table) openapi object as parsed from the spec.
 -- @param options table with conversion options
@@ -240,6 +372,39 @@ local function convert_paths(openapi, options)
 
       -- register entities
       registry_add(operation_obj, route)
+
+      do -- check security plugins required
+        local requirements, err = operation_obj:get_security()
+        if (not requirements) and err ~= "not found" then
+          return nil, err
+        end
+
+        if requirements and #requirements > 0 then
+          if #requirements > 1 then
+            return nil, "maximum of 1 Security Requirement supported, got " .. #requirements
+          end
+
+          local security_requirement = requirements[1]
+          if #security_requirement > 1 then
+            return nil, "maximum of 1 Security Scheme supported, got " .. #security_requirement
+          end
+
+          local plugin_conf = registry_get(requirements)
+          if not plugin_conf then
+            plugin_conf, err = create_security_plugin(security_requirement[1])
+            if not plugin_conf then
+              return nil, err
+            end
+
+            registry_add(requirements, plugin_conf)
+          end
+
+          route.plugins = route.plugins or {}
+          route.plugins[#route.plugins+1] = plugin_conf
+        end -- check security plugins required
+
+      end
+
     end
 
   end

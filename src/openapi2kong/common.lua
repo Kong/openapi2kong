@@ -110,9 +110,19 @@ function methods:get_inherited_property(name, types)
     types = setmetatable({}, {__index = function() return true end})
   end
 
+  local is_x_kong = name:find("^x%-kong%-")
+
   while true do
-    if types[obj.type] and obj[name] ~= nil then
-      return obj[name]
+    if types[obj.type] then
+      local value
+      if is_x_kong then
+        value = obj.spec[name]
+      else
+        value = obj[name]
+      end
+      if value ~= nil then
+        return value
+      end
     end
 
     if obj.type == "openapi" then

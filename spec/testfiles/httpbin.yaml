@@ -427,7 +427,8 @@ paths:
       tags:
         - auth
       security:
-        - bearerAuth: []
+        - basicAuth: []
+        #- bearerAuth: []
       responses:
         '200':
           description: Authorized
@@ -764,6 +765,8 @@ components:
       type: http
       scheme: basic
       description: Use the same username and password as you will provide in path parameters.
+      x-kong-security-basic-auth:
+        hide_credentials: true
     bearerAuth:
       type: http
       scheme: bearer
