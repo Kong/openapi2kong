@@ -42,6 +42,7 @@ build = {
      ["openapi2kong.paths"]               = "src/openapi2kong/paths.lua",
      ["openapi2kong.requestBody"]         = "src/openapi2kong/requestBody.lua",
      ["openapi2kong.schema"]              = "src/openapi2kong/schema.lua",
+     ["openapi2kong.securityRequirements"]= "src/openapi2kong/securityRequirements.lua",
      ["openapi2kong.securityRequirement"] = "src/openapi2kong/securityRequirement.lua",
      ["openapi2kong.securityScheme"]      = "src/openapi2kong/securityScheme.lua",
      ["openapi2kong.server"]              = "src/openapi2kong/server.lua",

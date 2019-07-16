@@ -58,14 +58,10 @@ local function parse(method, spec, options, parent)
   end
 
   if self.spec.security then
-    self.security = {}
-    local new_securityRequirement = require("openapi2kong.securityRequirement")
-
-    for i, securityRequirement_spec in ipairs(self.spec.security) do
-      self.security[i], err = new_securityRequirement(securityRequirement_spec, options, self)
-      if not self.security[i] then
-        return nil, err
-      end
+    local new_securityRequirements = require("openapi2kong.securityRequirements")
+    self.security, err = new_securityRequirements(self.spec.security, options, self)
+    if not self.security then
+      return nil, err
     end
   end
 
