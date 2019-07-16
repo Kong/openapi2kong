@@ -14,7 +14,9 @@ description = {
    homepage = "https://github.com/Kong/openapi2kong"
 }
 dependencies = {
-  "kong",
+  "lua-cjson",
+  "lyaml",
+  "penlight",
 }
 build = {
    type = "builtin",
