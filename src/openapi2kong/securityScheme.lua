@@ -104,19 +104,6 @@ local function parse(scheme_name, scopes, spec, options, parent)
   end
 
 
-  for _, property in ipairs { "servers", "paths" } do
-    local create_type = require("openapi2kong." .. property)
-    local sub_spec = self.spec[property]
-    if sub_spec then
-      local new_obj, err = create_type(sub_spec, options, self)
-      if not new_obj then
-        return nil, err
-      end
-
-      self[property] = new_obj
-    end
-  end
-
   ok, err = self:post_validate()
   if not ok then
     return ok, err
