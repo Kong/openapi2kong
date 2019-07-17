@@ -138,7 +138,8 @@ To overcome this Kong will only accept a single `securityScheme` from the `secur
 property.
 
 The additional properties that Kong supports on its plugins can be configured
-by using custom extensions. The custom extensions are `x-kong-security-<plugin-name>`.
+by using custom extensions. The custom extensions are `x-kong-security-<plugin-name>`,
+and they are supposed to contain ONLY the `config` element of the plugin.
 
 Supported types are:
 
@@ -158,4 +159,15 @@ Supported types are:
     - only `Basic` scheme is supported
     - implemented using the Kong plugin `basic-auth`
     - extended by: `x-kong-security-basic-auth`
+
+# Plugins
+
+Generic plugins can be added on an `operation` object. The custom extension to
+use is `x-kong-plugin-<plugin-name>`. The `name` property is not required
+(since it's already in the extension name). Optional properties not specified
+will get Kong defaults.
+
+_Note_: This extension needs to hold an object that contains the entire plugin
+config. This differs from `x-kong-security-<plugin-name>` extensions which only
+take the `config` sub-property.
 

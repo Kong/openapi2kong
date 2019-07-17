@@ -586,6 +586,8 @@ paths:
 
   /cookies:
     get:
+      x-kong-plugin-correlation-id:
+        name: correlation-id
       tags:
         - Cookies
       summary: Returns cookie data

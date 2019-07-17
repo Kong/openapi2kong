@@ -325,6 +325,16 @@ do
   end
 end
 
+-- takes the "operation" object and generates the plugin configuration to
+-- validate the request.
+-- @param operation_obj the operations object
+-- @return the `config` table for the plugin entity
+local function generate_validation_config(operation_obj)
+  assert(operation_obj.type == "operation", "expected an operation object")
+  local config = {}
+error("to implement")
+  return config
+end
 
 --- Converts "paths" object to "routes", and "plugins".
 -- @param openapi (table) openapi object as parsed from the spec.
@@ -401,10 +411,42 @@ local function convert_paths(openapi, options)
 
           route.plugins = route.plugins or {}
           route.plugins[#route.plugins+1] = plugin_conf
-        end -- check security plugins required
+        end
+      end -- check security plugins required
 
-      end
+      local request_validator_config
+      do  -- check other plugins to be added
+        for key, value in pairs(operation_obj.spec) do
+          if type(key) == "string" and type(value) == "table" then
+            local plugin_name = key:match("^x%-kong%-plugin%-(.-)$")
+            if plugin_name then
+              if value.name ~= nil and value.name ~= plugin_name then
+                return nil, ("mismatch between plugin extension ('%s') and plugin name ('%s')"):format(key, tostring(value.name))
+              end
 
+              -- add the plugin configuration
+              value.name = plugin_name
+              route.plugins = route.plugins or {}
+              route.plugins[#route.plugins+1] = value
+
+              -- if it is a validator without config, then we're supposed to create the config
+              if plugin_name == "request-validator" and value.config == nil then
+                request_validator_config = value
+              end
+            end
+          end
+        end
+      end -- check other plugins to be added
+
+      do -- request validation
+        if request_validator_config then
+          local err
+          request_validator_config.config, err = generate_validation_config(operation_obj)
+          if not request_validator_config.config then
+            return nil, err
+          end
+        end
+      end -- request validation
     end
 
   end
