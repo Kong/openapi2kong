@@ -44,6 +44,10 @@ function mt:post_validate()
     ["x-kong-service-defaults"] = { "openapi", "path", "operation" },
     ["x-kong-route-defaults"] = { "openapi", "path", "operation" },
   }
+  local valid_kong_directives_patterns = {
+    ["^x%-kong%-plugin%-"] = { "operation" },
+    ["^x%-kong%-security%-"] = { "openapi", "operation" },
+  }
 
   local recursion_tracker = {}
 
@@ -61,7 +65,15 @@ function mt:post_validate()
           -- found a Kong directive
           local valid_types = valid_kong_directives[key]
           if not valid_types then
-            return nil, "Not a valid Kong extension: " .. tostring(key)
+            for patt, types in pairs(valid_kong_directives_patterns) do
+              if key:find(patt) then
+                valid_types = types
+                break
+              end
+            end
+            if not valid_types then
+              return nil, "Not a valid Kong extension: " .. tostring(key)
+            end
           end
 
           local valid = false

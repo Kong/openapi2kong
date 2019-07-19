@@ -138,27 +138,42 @@ To overcome this Kong will only accept a single `securityScheme` from the `secur
 property.
 
 The additional properties that Kong supports on its plugins can be configured
-by using custom extensions. The custom extensions are `x-kong-security-<plugin-name>`,
-and they are supposed to contain ONLY the `config` element of the plugin.
+by using custom extensions. The custom extensions are
+`x-kong-security-<plugin-name>`.
 
 Supported types are:
 
 - `oauth2`
+    - NOT YET IMPLEMENTED!
     - except for the implicit flow
     - implemented using the Kong plugin `openid-connect`
     - extended by: `x-kong-security-openid-connect`
 - `openIdConnect`
     - implemented using the Kong plugin `openid-connect`
     - extended by: `x-kong-security-openid-connect`
+    - properties set from OpenAPI spec:
+        - `issuer` (from `openIdConnectUrl` property)
+        - `scopes_required` will get the combined set of scopes from the
+          extension defaults and the scopes from the Security Requirement
+          Object
 - `apiKey`
     - except for the `in` property, since the Kong plugin will by default
       look in header and query already. Cookie is not supported.
     - implemented using the Kong plugin `key-auth`
     - extended by: `x-kong-security-key-auth`
+    - properties set from OpenAPI spec:
+        - `key_names` will get the defaults from the extension and then the
+          `name` from the `securityScheme` object will be added to that list
+    - requires to add credentials to Kong, which is not supported through
+      OpenAPI specs.
 - `http`
     - only `Basic` scheme is supported
     - implemented using the Kong plugin `basic-auth`
     - extended by: `x-kong-security-basic-auth`
+    - properties set from OpenAPI spec:
+        - none
+    - requires to add credentials to Kong, which is not supported through
+      OpenAPI specs.
 
 # Plugins
 
@@ -167,9 +182,20 @@ use is `x-kong-plugin-<plugin-name>`. The `name` property is not required
 (since it's already in the extension name). Optional properties not specified
 will get Kong defaults.
 
-_Note_: This extension needs to hold an object that contains the entire plugin
-config. This differs from `x-kong-security-<plugin-name>` extensions which only
-take the `config` sub-property.
+This extension needs to hold an object that contains the entire plugin
+config.
+
+```json
+"x-kong-plugin-key-auth": {
+  "name": "key-auth",
+  "enabled": true,
+  "config": {
+    "key_names": ["api_key", "apikey"],
+    "key_in_body": false,
+    "hide_credentials": true
+  }
+}
+```
 
 # Validation
 

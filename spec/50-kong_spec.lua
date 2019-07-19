@@ -20,7 +20,7 @@ describe("[Kong conversion]", function()
 --      local expected = assert(utils.readfile(filename .. ".expected"))
 --      expected = assert(cjson.decode(expected))
 --      assert.same(expected, kong_spec)
-      assert(utils.writefile(filename .. ".expected", cjson.encode(kong_spec)))
+      assert(utils.writefile(filename .. ".expected", assert(cjson.encode(kong_spec))))
     end)
   end
 

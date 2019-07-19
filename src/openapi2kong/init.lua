@@ -227,10 +227,10 @@ do
       if securityScheme.spec.scheme:lower() ~= "basic" then
         return nil, "securityScheme http only supports `basic`, not: " .. securityScheme.spec.scheme
       end
-      local plugin = {
-        name = "basic-auth",
-        config = get_securityScheme_defaults(securityScheme)
-      }
+
+      local plugin = get_securityScheme_defaults(securityScheme)
+      plugin.name = "basic-auth"
+
       return plugin
     end, -- http
 
@@ -238,10 +238,9 @@ do
       if securityScheme.spec["in"] == "cookie" then
         return nil, "apiKey in 'cookie' is not supported"
       end
-      local plugin = {
-        name = "key-auth",
-        config = get_securityScheme_defaults(securityScheme)
-      }
+
+      local plugin = get_securityScheme_defaults(securityScheme)
+      plugin.name = "key-auth"
 
       plugin.config.key_names = plugin.config.key_names or {}
       local duplicate = false
@@ -257,22 +256,33 @@ do
     end, -- apiKey
 
     openIdConnect = function(securityScheme)
-      local plugin = {
-        name = "openid-connect",
-        config = get_securityScheme_defaults(securityScheme),
-      }
+      local plugin = get_securityScheme_defaults(securityScheme)
+      plugin.name = "openid-connect"
+
+      local scopes_required = plugin.config.scopes_required or {}
+      for _, scope_to_add in ipairs(securityScheme.scopes) do
+        local set_scope = true
+        for _, existing_scope in ipairs(scopes_required) do
+          if existing_scope == scope_to_add then
+            set_scope = false
+            break
+          end
+        end
+        if set_scope then
+          scopes_required[#scopes_required+1] = scope_to_add
+        end
+      end
 
       plugin.config.issuer = securityScheme.spec.openIdConnectUrl
+      plugin.config.scopes_required = scopes_required
 
       return plugin
     end, -- openIdConnect
 
     oauth2 = function(securityScheme)
       -- oauth2 is also implementated using OIDC plugin
-      local plugin = {
-        name = "openid-connect",
-        config = get_securityScheme_defaults(securityScheme),
-      }
+      local plugin = get_securityScheme_defaults(securityScheme)
+      plugin.name = "openid-connect"
 
       local auth_methods = plugin.config.auth_methods or {}
       local authorizationUrl
@@ -337,19 +347,21 @@ local function generate_validation_config(operation_obj)
 
   -- Parameters
   local parameter_schema = {}
-  for param in operation_obj.parameters:iterate() do
-    if param.schema then
-      local spec = {
-        ["in"] = param["in"],
-        name = param.name,
-        style = param.style,
-        explode = param.explode,
-        required = param.required,
-        schema = param.schema,  -- is object, verify!
-      }
-      parameter_schema[#parameter_schema+1] = spec
-    else
-      return nil, "Parameter using 'content' type validation is not supported"
+  if operation_obj.parameters then
+    for param in operation_obj.parameters:iterate() do
+      if param.schema then
+        local spec = {
+          ["in"] = param["in"],
+          name = param.name,
+          style = param.style,
+          explode = param.explode,
+          required = param.required,
+          schema = param.schema,  -- is object, verify!
+        }
+        parameter_schema[#parameter_schema+1] = spec
+      else
+        return nil, "Parameter using 'content' type validation is not supported"
+      end
     end
   end
   if #parameter_schema > 0 then
@@ -371,6 +383,10 @@ local function generate_validation_config(operation_obj)
   end
   if body_schema then
     config.body_schema = body_schema
+  end
+
+  if not (config.body_schema or config.parameter_schema) then
+    return nil, "cannot add request-validator plugin without either parameters or body"
   end
 
   return config

@@ -73,6 +73,8 @@ paths:
           schema:
             anyOf:
               - type: string # ????
+      x-kong-plugin-request-validator:
+        enabled: true
       responses:
         '200':
           $ref: '#/components/responses/TimestampResponse'
