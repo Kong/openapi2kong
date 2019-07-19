@@ -56,6 +56,58 @@ describe("[parameters]", function()
     assert.equal("just-a-header", result[1].spec.name)
   end)
 
+
+  it("iterates parameter", function()
+    local path = { type = "path" }
+    local path_params = assert(parameters({
+        {
+          ["in"] = "path",
+          ["name"] = "user",
+          ["schema"] = { schema = 1 },
+          ["required"] = true,
+        }, {
+          ["in"] = "header",
+          ["name"] = "just-a-header",
+          ["schema"] = { schema = 2 },
+        },
+      }, nil, path))
+    path.parameters = path_params
+
+    local operation_params = assert(parameters({
+        {
+          ["in"] = "path",     -- "Accept" header should be ignored, per OAS spec
+          ["name"] = "user",   --> should be case insensitive
+          ["schema"] = { schema = 3 },
+          ["required"] = true,
+        }, {
+          ["in"] = "cookie",
+          ["name"] = "user",
+          ["schema"] = { schema = 5 },
+        },
+      }, nil, { type = "operation", parent = path }))
+      operation_params.parent.parameters = operation_params
+
+
+      -- validate the returned params on the "path" object
+      local list = {}
+      for param in path_params:iterate() do
+        list[#list+1] = param.spec.schema.schema
+      end
+      assert.same({ 1, 2 }, list)
+
+      -- validate the returned params on the "operation" object
+      list = {}
+      for param in operation_params:iterate() do
+        list[#list+1] = param.spec.schema.schema
+      end
+      assert.same({
+          3,   -- operation level parameter overrules path level
+          5,   -- new on operation level
+          2,   -- inherited from path level
+        }, list)
+
+  end)
+
 end)
 
 

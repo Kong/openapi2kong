@@ -331,8 +331,48 @@ end
 -- @return the `config` table for the plugin entity
 local function generate_validation_config(operation_obj)
   assert(operation_obj.type == "operation", "expected an operation object")
-  local config = {}
-error("to implement")
+  local config = {
+    version = "draft4",
+  }
+
+  -- Parameters
+  local parameter_schema = {}
+  for param in operation_obj.parameters:iterate() do
+    if param.schema then
+      local spec = {
+        ["in"] = param["in"],
+        name = param.name,
+        style = param.style,
+        explode = param.explode,
+        required = param.required,
+        schema = param.schema,  -- is object, verify!
+      }
+      parameter_schema[#parameter_schema+1] = spec
+    else
+      return nil, "Parameter using 'content' type validation is not supported"
+    end
+  end
+  if #parameter_schema > 0 then
+    config.parameter_schema = parameter_schema
+  end
+
+  -- Body
+  local body_schema
+  if operation_obj.requestBody then
+    for _, media_type in ipairs(operation_obj.requestBody) do
+      if media_type.mediatype == "application/json" then
+        assert(not body_schema, "body_schema was already set!")
+        body_schema = media_type.schema  -- is object verify!
+      else
+        return nil, ("Body validation supports only 'application/json', " ..
+                     "not '%s'"):format(tostring(media_type.mediatype))
+      end
+    end
+  end
+  if body_schema then
+    config.body_schema = body_schema
+  end
+
   return config
 end
 

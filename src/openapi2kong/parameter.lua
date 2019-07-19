@@ -63,6 +63,14 @@ function mt:validate()
 end
 
 
+-- returns unique id based on properties.
+-- A parameter is uniquely identified by the combination of the `in` and `name`
+-- properties.
+function mt:get_id()
+  return self["in"] .. "/" .. self.name
+end
+
+
 function mt:post_validate()
 
   -- do validation after creation

@@ -171,3 +171,14 @@ _Note_: This extension needs to hold an object that contains the entire plugin
 config. This differs from `x-kong-security-<plugin-name>` extensions which only
 take the `config` sub-property.
 
+# Validation
+
+To enable validation the `request-validation` plugin must be added to an
+`operation` object. You can either specify the full configuration, or have it
+be auto-generated based on the OpenAPI spec.
+
+To enable auto generation, add the plugin, but do not include the `config`
+property. The `config` property will then be auto-generated and added to
+the generated spec.
+
+

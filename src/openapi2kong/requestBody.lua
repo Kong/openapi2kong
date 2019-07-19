@@ -20,7 +20,8 @@ function mt:post_validate()
   return true
 end
 
-
+-- returns an object with a `content` property that contains an array
+-- of mediaType objects.
 local function parse(spec, options, parent)
 
   local self = setmetatable({

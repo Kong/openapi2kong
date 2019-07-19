@@ -29,8 +29,8 @@ function mt:post_validate()
 end
 
 
--- returned object will have 'path' (string), 'servers' (servers-obj), and
--- 'operations' (array of operations_obj) properties
+-- returned object will have 'path' (string), 'servers' (servers-obj),
+-- 'parameters' and 'operations' (array of operations_obj) properties
 local function parse(path, spec, options, parent)
 
   local self = setmetatable({

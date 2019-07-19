@@ -32,6 +32,28 @@ describe("[parameter]", function()
   end)
 
 
+  it("get_id() creates proper ids", function()
+    for _, where in ipairs {"path", "query", "header", "cookie"} do
+      local result, err = parameter({
+          ["in"] = where,
+          required = true,
+          name = "Param_Name",
+          schema = {},
+        }, nil, {})
+      assert.is_nil(err)
+      assert.is_table(result)
+      assert.equal(where, result["in"])
+      assert.equal("parameter", result.type)
+      assert.equal(({
+          path = "path/Param_Name",
+          query = "query/Param_Name",
+          header = "header/param_name",  -- lower case
+          cookie = "cookie/Param_Name",
+        })[where], result:get_id())
+    end
+  end)
+
+
   it("rejects bad 'in' values", function()
     local result, err = parameter({
         ["in"] = "this is a bad one",

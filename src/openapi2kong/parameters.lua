@@ -20,6 +20,47 @@ function mt:post_validate()
   return true
 end
 
+
+-- Iterate over all parameters applicable.
+-- This includes the parameters defined at `path` level, and possibly overridden
+-- on the `operation` level.
+function mt:iterate()
+
+  local list
+  if self.parent.type == "path" then
+    -- no inherited ones
+    list = self
+  else
+    -- we're at the `operation` level and must take inherited ones into account
+    local operation = self.parent
+    assert(operation.type == "operation", "expected an operation object, got "
+                                          .. tostring(operation.type))
+    list = {}
+    local duplicates = {}
+    for i, param in ipairs(self) do
+      list[i] = param
+      duplicates[param:get_id()] = true
+    end
+    local path = operation.parent
+    assert(path.type == "path", "expected a path object, got "
+                                .. tostring(path.type))
+    for _, param in ipairs(path.parameters or {}) do
+      local id = param:get_id()
+      if not duplicates[id] then
+        list[#list+1] = param
+        duplicates[id] = true
+      end
+    end
+  end
+
+  local i = 0
+  return function()
+            i = i + 1
+            return list[i]
+         end
+end
+
+
 -- this object contains an array part that holds the parameter objects
 local function parse(spec, options, parent)
 
