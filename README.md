@@ -15,12 +15,13 @@ $ luarocks make
 From here the CLI utility can be used as follows:
 
 ```
-Usage: openapi2kong [OPTIONS] <output> <input...>
+Usage: openapi2kong [OPTIONS] <input...>
 
 Convert OpenAPI spec 3.x into Kong declarative format
   --tags (default "") Comma separated list of tags to apply
   --json              Write output as json (yaml is the default)
-  <output> (string)   output file
+  --output (default "stdout")
+                      Output file where to write to
   <input...> (string) input files (either json or yaml files)
 ```
 

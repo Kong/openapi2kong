@@ -770,7 +770,8 @@ components:
       scheme: basic
       description: Use the same username and password as you will provide in path parameters.
       x-kong-security-basic-auth:
-        hide_credentials: true
+        config:
+          hide_credentials: true
     bearerAuth:
       type: http
       scheme: bearer

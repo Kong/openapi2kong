@@ -94,6 +94,11 @@ do
       assert(value2 == nil, "did not expect a second value for 'operation'")
 
     elseif type_obj == "securityRequirements" then
+
+--local p
+--p, value1.parent = value1.parent, nil
+--require"pl.pretty"(value1)
+--value1.parent = p
       registry[key] = assert(value1.name ~= nil and value1.config ~= nil and value1 , "expected first value to be a Plugin")
       assert(value2 == nil, "did not expect a second value for 'securityRequirements'")
 
@@ -230,6 +235,7 @@ do
 
       local plugin = get_securityScheme_defaults(securityScheme)
       plugin.name = "basic-auth"
+      plugin.config = plugin.config or {}
 
       return plugin
     end, -- http
@@ -241,6 +247,7 @@ do
 
       local plugin = get_securityScheme_defaults(securityScheme)
       plugin.name = "key-auth"
+      plugin.config = plugin.config or {}
 
       plugin.config.key_names = plugin.config.key_names or {}
       local duplicate = false
@@ -258,6 +265,7 @@ do
     openIdConnect = function(securityScheme)
       local plugin = get_securityScheme_defaults(securityScheme)
       plugin.name = "openid-connect"
+      plugin.config = plugin.config or {}
 
       local scopes_required = plugin.config.scopes_required or {}
       for _, scope_to_add in ipairs(securityScheme.scopes) do
@@ -283,6 +291,7 @@ do
       -- oauth2 is also implementated using OIDC plugin
       local plugin = get_securityScheme_defaults(securityScheme)
       plugin.name = "openid-connect"
+      plugin.config = plugin.config or {}
 
       local auth_methods = plugin.config.auth_methods or {}
       local authorizationUrl
@@ -356,7 +365,7 @@ local function generate_validation_config(operation_obj)
           style = param.style,
           explode = param.explode,
           required = param.required,
-          schema = param.schema,  -- is object, verify!
+          schema = assert(cjson.encode(param.schema:get_dereferenced_schema()))
         }
         parameter_schema[#parameter_schema+1] = spec
       else
@@ -374,7 +383,7 @@ local function generate_validation_config(operation_obj)
     for _, media_type in ipairs(operation_obj.requestBody) do
       if media_type.mediatype == "application/json" then
         assert(not body_schema, "body_schema was already set!")
-        body_schema = media_type.schema  -- is object verify!
+        body_schema = assert(cjson.encode(media_type.schema:get_dereferenced_schema()))
       else
         return nil, ("Body validation supports only 'application/json', " ..
                      "not '%s'"):format(tostring(media_type.mediatype))

@@ -5,12 +5,13 @@ local utils = require "pl.utils"
 local lapp = require "pl.lapp"
 
 local args = lapp [[
-Usage: openapi2kong [OPTIONS] <output> <input...>
+Usage: openapi2kong [OPTIONS] <input...>
 
 Convert OpenAPI spec 3.x into Kong declarative format
   --tags (default "") Comma separated list of tags to apply
   --json              Write output as json (yaml is the default)
-  <output> (string)   output file
+  --output (default "stdout")
+                      Output file where to write to
   <input...> (string) input files (either json or yaml files)
 
 ]]
@@ -32,5 +33,10 @@ else
   kong_encoded = cjson.encode(kong_spec)
 end
 
-assert(utils.writefile(args.output, kong_encoded))
-
+if args.output:lower() ~= "stdout" then
+  assert(utils.writefile(args.output, kong_encoded))
+else
+  io.stdout:setvbuf("no")
+  io.stdout:write(kong_encoded)
+  io.stdout:write("\n")
+end
