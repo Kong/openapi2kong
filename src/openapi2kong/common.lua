@@ -98,11 +98,92 @@ do
   end
 end
 
+do
+  local x_kong_mt
+
+  -- returns the dereferenced property (original table from spec)
+  function methods:dereference_x_kong(property_name)
+    assert(type(property_name) == "string", "expected the property_name to be an string")
+    assert(property_name:sub(1,7) == "x-kong-", " expected property name to be an 'x-kong-xyz' directive")
+
+    local prop = self.spec[property_name]
+    if type(prop) ~= "table" or prop["$ref"] == nil then
+      -- nothing to dereference
+      return prop
+    end
+
+    -- initialize late, to prevent loops in requiring
+    x_kong_mt = x_kong_mt or M.create_mt("x-kong")
+
+    -- create a temporary object
+    local x_kong_obj = setmetatable({
+      spec = prop,
+      parent = self,
+    }, x_kong_mt)
+    local ok, err = x_kong_obj:dereference()
+    if not ok then
+      error("failed dereferencing x-kong extension '" .. tostring(prop["$ref"] ..
+            "': " .. tostring(err)))
+    end
+    return x_kong_obj.spec  -- this contains the dereferenced spec now
+  end
+
+end
+
+
+
+-- returns a list of plugins indexed by their name.
+-- Contains openapi level plugins, overridden by operation level plugins.
+function methods:get_plugins()
+  assert(self.type == "operation", "expected an 'operation' object")
+
+  -- we're adding to list "input", hence overwriting existing ones
+  local function get_list(self, input)
+    assert(type(input) == "table", "expected a table to add to")
+    assert(type(self.spec) == "table", "expected a table as spec")
+
+    for key, value in pairs(self.spec) do
+      if type(key) == "string" and type(value) == "table" then
+        local plugin_name = key:match("^x%-kong%-plugin%-(.-)$")
+
+        if plugin_name then
+          value = self:dereference_x_kong(key)
+
+          local plugin_table = deepcopy(value)
+
+          if plugin_table.name == nil then
+            plugin_table.name = plugin_name
+          else
+            assert(plugin_table.name == plugin_name,
+                  ("mismatch between plugin extension ('%s') and plugin " ..
+                   "name ('%s')"):format(key, tostring(plugin_table.name)))
+          end
+
+          input[plugin_name] = plugin_table
+        end
+      end
+    end
+    return input
+  end
+
+  local openapi_obj = assert(self:get_openapi())
+  local list = {}
+  list = get_list(openapi_obj, list)  -- first get list on OpenAPI level
+  list = get_list(self, list)         -- add/overwrite Operation level ones
+  return list
+end
+
+
+
 -- returns the first named property in the chain up to toplevel openapi
 -- object.
--- @param name the property name to look for
+-- @param name the property name to look for. If it starts with `x-kong-` then
+-- the lookup will not be on the `self`, but on `self.spec`.
 -- @param types (optional) a set with the types we're looking for, types not listed
 -- will be skipped. Default: allow all types
+-- @return value, nil, obj_on_which_it_was_found, or
+--         nil, "not found", or
+--         nil, err
 function methods:get_inherited_property(name, types)
   local obj = self
   local count = MAX_RECUR  -- poor man's recursion detection
@@ -122,7 +203,7 @@ function methods:get_inherited_property(name, types)
         value = obj[name]
       end
       if value ~= nil then
-        return value
+        return value, nil, obj
       end
     end
 
@@ -269,6 +350,7 @@ do
     header = true,
     securityScheme = true,
     path = true,
+    ["x-kong"] = true,
   }
 
 

@@ -119,12 +119,16 @@ end
 -- finds the next "x-kong-xxxx" custom extension.
 -- returns a copy of the default table, or an empty table if not found
 local function get_kong_defaults(obj, custom_directive, types)
-  local default, err = obj:get_inherited_property(custom_directive, types)
+  local default, err, owning_obj = obj:get_inherited_property(custom_directive, types)
   if err and err ~= "not found" then
     return nil, err
   end
-  default = default or {}
-  return table_deepcopy(default)
+  if default then
+    default = owning_obj:dereference_x_kong(custom_directive)
+    default = table_deepcopy(default)
+  end
+
+  return default or {}
 end
 
 -- finds the next "x-kong-upstream-defaults" custom extension
@@ -146,7 +150,8 @@ end
 -- extensions are `x-kong-security-xxx` where `xxx` is the plugin name used
 local function get_securityScheme_defaults(obj)
   local t = obj.spec.type
-  local types = { [obj.type] = true } -- only allow our own type, so no inherited propertues
+  local types = { [obj.type] = true,
+                  openapi    = true } -- allow our own type, and top level
   if t == "oauth2" then
     return get_kong_defaults(obj, "x-kong-security-openid-connect", types)
 
@@ -394,10 +399,6 @@ local function generate_validation_config(operation_obj)
     config.body_schema = body_schema
   end
 
-  if not (config.body_schema or config.parameter_schema) then
-    return nil, "cannot add request-validator plugin without either parameters or body"
-  end
-
   return config
 end
 
@@ -481,40 +482,45 @@ local function convert_paths(openapi, options)
 
       local request_validator_config
       do  -- check other plugins to be added
-        for key, value in pairs(operation_obj.spec) do
-          if type(key) == "string" and type(value) == "table" then
-            local plugin_name = key:match("^x%-kong%-plugin%-(.-)$")
-            if plugin_name then
-              if value.name ~= nil and value.name ~= plugin_name then
-                return nil, ("mismatch between plugin extension ('%s') and plugin name ('%s')"):format(key, tostring(value.name))
-              end
+        for plugin_name, plugin_table in pairs(operation_obj:get_plugins()) do
+          route.plugins = route.plugins or {}
+          route.plugins[#route.plugins+1] = plugin_table
 
-              -- add the plugin configuration
-              value.name = plugin_name
-              route.plugins = route.plugins or {}
-              route.plugins[#route.plugins+1] = value
-
-              -- if it is a validator without config, then we're supposed to create the config
-              if plugin_name == "request-validator" and value.config == nil then
-                request_validator_config = value
-              end
-            end
+          -- if it is a validator without config, then we need to hold on to it
+          if plugin_name == "request-validator" then
+            request_validator_config = plugin_table
           end
         end
       end -- check other plugins to be added
 
       do -- request validation
-        if request_validator_config then
+        if request_validator_config and request_validator_config.config == nil then
           local err
           request_validator_config.config, err = generate_validation_config(operation_obj)
           if not request_validator_config.config then
             return nil, err
           end
+
+          -- anything to validate?
+          if not (request_validator_config.config.body_schema or
+                  request_validator_config.config.parameter_schema) then
+            -- if there is nothing to validate, so remove it again
+            -- typically happens if inherited from top-level OpenAPI on a
+            -- path without parameter/body
+            for i, plugin in ipairs(route.plugins) do
+              if plugin == request_validator_config then
+                table.remove(route.plugins, i)
+                break
+              end
+            end
+          end
+
         end
       end -- request validation
-    end
 
-  end
+    end  -- for: Operations
+
+  end  -- for: Paths
 
   return kong
 end

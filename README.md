@@ -183,6 +183,10 @@ use is `x-kong-plugin-<plugin-name>`. The `name` property is not required
 (since it's already in the extension name). Optional properties not specified
 will get Kong defaults.
 
+Plugins can also be added on the `OpenAPI` object level, in which case they
+will be applied to every `Operation` in the spec. If a plugin is specified on
+both, the `Operation` level one will take precedence.
+
 This extension needs to hold an object that contains the entire plugin
 config.
 
@@ -195,6 +199,15 @@ config.
     "key_in_body": false,
     "hide_credentials": true
   }
+}
+```
+
+References are also supported, so this is valid as well (provided the
+reference exists):
+
+```json
+"x-kong-plugin-key-auth": {
+  "$ref": "#/components/kong/plugins/key_auth_config"
 }
 ```
 

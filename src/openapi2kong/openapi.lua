@@ -45,7 +45,7 @@ function mt:post_validate()
     ["x-kong-route-defaults"] = { "openapi", "path", "operation" },
   }
   local valid_kong_directives_patterns = {
-    ["^x%-kong%-plugin%-"] = { "operation" },
+    ["^x%-kong%-plugin%-"] = { "openapi", "operation" },
     ["^x%-kong%-security%-"] = { "openapi", "operation" },
   }
 

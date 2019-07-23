@@ -714,4 +714,116 @@ describe("[common]", function()
 
   end)
 
+
+
+  describe("'get_plugins' method", function()
+
+    it("returns plugins", function()
+      local openapi_obj = assert(openapi({
+        openapi = "3.0",
+        components = {
+          plugins = {}
+        },
+        paths = {
+          ["/"] = {
+            get = {
+              ["x-kong-plugin-request-termination"] = {  -- overrides global one
+                value = 1,
+              },
+            },
+            post = {
+              ["x-kong-plugin-request-transformer"] = {  -- only on this level
+                value = 3,
+              },
+            },
+          },
+        },
+        ["x-kong-plugin-request-termination"] = {
+          value = 2,
+        },
+        ["x-kong-plugin-response-transformer"] = {  -- only global, so in all lists
+          value = 4,
+        },
+      }))
+
+      local get_op = assert(openapi_obj.paths[1].operations[1])
+      local post_op = assert(openapi_obj.paths[1].operations[2])
+      do -- order cannot be guaranteed, so double check
+        if get_op.method ~= "get" then -- switch
+          get_op, post_op = post_op, get_op
+        end
+        assert.equal("get", get_op.method)
+        assert.equal("post", post_op.method)
+      end
+
+      assert.same({
+        ["request-termination"] = {
+          name = "request-termination",
+          value = 1,
+        },
+        ["response-transformer"] = {
+          name = "response-transformer",
+          value = 4,
+        }
+      }, get_op:get_plugins())
+
+      assert.same({
+        ["request-termination"] = {
+          name = "request-termination",
+          value = 2,
+        },
+        ["request-transformer"] = {
+          name = "request-transformer",
+          value = 3,
+        },
+        ["response-transformer"] = {
+          name = "response-transformer",
+          value = 4,
+        }
+      }, post_op:get_plugins())
+    end)
+
+    it("dereferences plugins", function()
+      local openapi_obj = assert(openapi({
+        openapi = "3.0",
+        components = {
+          plugins = {
+            terminate = {
+                value = 1,
+            },
+            transform = {
+                value = 2,
+            },
+          }
+        },
+        paths = {
+          ["/"] = {
+            get = {
+              ["x-kong-plugin-request-termination"] = {
+                ["$ref"] = "#/components/plugins/terminate"
+              }
+            },
+          },
+        },
+        ["x-kong-plugin-response-transformer"] = {
+          ["$ref"] = "#/components/plugins/transform"
+        },
+      }))
+
+      local get_op = assert(openapi_obj.paths[1].operations[1])
+
+      assert.same({
+        ["request-termination"] = {
+          name = "request-termination",
+          value = 1,
+        },
+        ["response-transformer"] = {
+          name = "response-transformer",
+          value = 2,
+        }
+      }, get_op:get_plugins())
+    end)
+
+  end)
+
 end)
