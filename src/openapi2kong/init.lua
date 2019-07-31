@@ -539,7 +539,7 @@ end
 -- @param options table with conversion options;
 --  - `kong` (optional) an existing kong spec to add to
 -- @return table or nil+err
-local function to_kong(openapi, options)
+local function openapi_to_kong(openapi, options)
   options = options or {}
   options.kong = options.kong or new_kong()
   options.kong.upstreams = options.kong.upstreams or {}
@@ -560,8 +560,25 @@ local function to_kong(openapi, options)
 end
 
 
---- Takes an OpenAPI spec and returns it as a Kong config.
--- @param spec_input the OpenAPI spec to convert. Can be a either a table, a json-string, or a yaml-string.
+local function kong_to_kong(spec, options)
+  options = options or {}
+  options.kong = options.kong or new_kong()
+
+  local tags = spec._tags
+  for key, value in pairs(spec) do
+    if key:sub(1, 1) ~= "_" and type(value) == "table" then
+      options.kong[key] = options.kong[key] or {}
+      for _, entity in ipairs(value) do
+        options.kong[key][#options.kong[key] + 1] = table_deepcopy(entity)
+      end
+    end
+  end
+  
+  return options.kong
+end
+
+--- Takes an OpenAPI/Kong spec and returns it as a Kong config.
+-- @param spec_input the OpenAPI/Kong spec to convert. Can be a either a table, a json-string, or a yaml-string.
 -- @param options table with conversion options
 -- @return table with kong spec, or nil+err
 local function convert_spec(spec_input, options)
@@ -579,11 +596,20 @@ local function convert_spec(spec_input, options)
   end
 
   local kong_obj
-  kong_obj, err = to_kong(openapi_obj, options)
-  if not kong_obj then
-    return nil, err
+  if not openapi_obj._format_version == "1.1" then
+    -- not a kong spec, so let's go for OpenAPI
+    kong_obj, err = openapi_to_kong(openapi_obj, options)
+    if not kong_obj then
+      return nil, err
+    end
+  else
+    -- this already is a Kong spec
+    kong_obj, err = kong_to_kong(openapi_obj, options)
+    if not kong_obj then
+      return nil, err
+    end
   end
-
+  
   return kong_obj
 end
 
