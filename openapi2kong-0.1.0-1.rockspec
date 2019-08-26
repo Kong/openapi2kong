@@ -1,5 +1,5 @@
 package = "openapi2kong"
-version = "scm-1"
+version = "0.1.0-1"
 source = {
    url = "git://github.com/kong/openapi2kong",
    branch = "master"
@@ -10,7 +10,7 @@ description = {
       Reads an OpenAPI spec and outputs a file with Upstream, Service, Route
       definitions to be imported in Kong.
    ]],
-   license = "Apache 2.0",
+   license = "Proprietary",
    homepage = "https://github.com/Kong/openapi2kong"
 }
 dependencies = {

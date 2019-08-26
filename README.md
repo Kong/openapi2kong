@@ -2,6 +2,10 @@
 
 Lib to convert OpenAPI specs into Kong specs
 
+# History
+
+See [CHANGELOG.md](https://github.com/Kong/openapi2kong/blob/master/CHANGELOG.md).
+
 # Usage & installation
 
 It can be installed from the repo using LuaRocks
