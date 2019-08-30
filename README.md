@@ -29,6 +29,11 @@ Convert OpenAPI spec 3.x into Kong declarative format
   <input...> (string) input files (either json or yaml files)
 ```
 
+# Quick start
+
+See [the examples](https://github.com/Kong/openapi2kong/tree/master/examples),
+and try to convert them. The annotations in the files explain how most of the
+properties work.
 
 # Generating Kong entities
 
