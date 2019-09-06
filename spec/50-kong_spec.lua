@@ -12,6 +12,7 @@ describe("[Kong conversion]", function()
     "spec/testfiles/uspto.yaml",
     "spec/testfiles/httpbin.yaml",
     "spec/testfiles/petstore.yaml",
+    "spec/testfiles/security.yaml",
   }
 
   for _, filename in ipairs(files) do
