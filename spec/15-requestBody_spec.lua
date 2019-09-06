@@ -1,3 +1,4 @@
+_G._TEST = true
 local requestBody = require "openapi2kong.requestBody"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,7 +7,7 @@ describe("[requestBody]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = requestBody("lalala", nil, {})
-    assert.equal("a requestBody object expects a table as spec, but got string", err)
+    assert.equal("a requestBody object expects a table as spec, but got string (origin: PARENT:requestBody)", err)
     assert.falsy(ok)
   end)
 
@@ -32,7 +33,7 @@ describe("[requestBody]", function()
           ["text/plain"] = { schema = {} },
         }
       }, nil, {})
-    assert.equal("a mediaType object expects a table as spec, but got string", err)
+    assert.equal("a mediaType object expects a table as spec, but got string (origin: PARENT:requestBody:mediaType[application/json])", err)
     assert.falsy(result)
   end)
 

@@ -1,10 +1,11 @@
+_G._TEST = true
 local encodings = require "openapi2kong.encodings"
 
 describe("[encodings]", function()
 
   it("requires a table parameter", function()
     local ok, err = encodings("lalala", nil, {})
-    assert.equal("a encodings object expects a table, but got string", err)
+    assert.equal("a encodings object expects a table, but got string (origin: PARENT:encodings)", err)
     assert.falsy(ok)
   end)
 

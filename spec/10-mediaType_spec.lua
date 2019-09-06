@@ -1,3 +1,4 @@
+_G._TEST = true
 local mediaType = require "openapi2kong.mediaType"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,13 +7,13 @@ describe("[mediaType]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = mediaType("application/json", "lalala", nil, {})
-    assert.equal("a mediaType object expects a table as spec, but got string", err)
+    assert.equal("a mediaType object expects a table as spec, but got string (origin: PARENT:mediaType[application/json])", err)
     assert.falsy(ok)
   end)
 
   it("requires a string parameter as mediatype", function()
     local ok, err = mediaType(123, {}, nil, {})
-    assert.equal("a mediaType object expects a string as mediatype, but got number", err)
+    assert.equal("a mediaType object expects a string as mediatype, but got number (origin: PARENT:mediaType[123])", err)
     assert.falsy(ok)
   end)
 
@@ -47,7 +48,7 @@ describe("[mediaType]", function()
           },
         },
       }, nil, {})
-    assert.equal("a schema object expects a table as spec, but got string", err)
+    assert.equal("a schema object expects a table as spec, but got string (origin: PARENT:mediaType[application/json]:schema)", err)
     assert.is_nil(result)
   end)
 
@@ -64,7 +65,7 @@ describe("[mediaType]", function()
         },
         encoding = "lalala",
       }, nil, {})
-    assert.equal("a encodings object expects a table, but got string", err)
+    assert.equal("a encodings object expects a table, but got string (origin: PARENT:mediaType[application/json]:encodings)", err)
     assert.is_nil(result)
   end)
 

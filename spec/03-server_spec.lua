@@ -1,10 +1,11 @@
+_G._TEST = true
 local server = require "openapi2kong.server"
 
 describe("[server]", function()
 
   it("requires a table parameter", function()
     local ok, err = server(123, nil, {})
-    assert.equal("a server object expects a table, but got number", err)
+    assert.equal("a server object expects a table, but got number (origin: PARENT:server[<bad spec: number>])", err)
     assert.falsy(ok)
   end)
 

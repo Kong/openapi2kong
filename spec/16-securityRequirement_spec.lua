@@ -1,3 +1,4 @@
+_G._TEST = true
 local common = require "openapi2kong.common"
 local securityRequirement = require "openapi2kong.securityRequirement"
 
@@ -7,13 +8,13 @@ describe("[securityRequirement]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = securityRequirement("lalala", nil, {})
-    assert.equal("a securityRequirement object expects a table as spec, but got string", err)
+    assert.equal("a securityRequirement object expects a table as spec, but got string (origin: PARENT:securityRequirement)", err)
     assert.falsy(ok)
   end)
 
   it("fails without at leat 1 securityScheme", function()
     local ok, err = securityRequirement({}, nil, {})
-    assert.equal("a securityRequirement requires at least 1 securityScheme", err)
+    assert.equal("a securityRequirement requires at least 1 securityScheme (origin: PARENT:securityRequirement)", err)
     assert.falsy(ok)
   end)
 
@@ -53,10 +54,11 @@ describe("[securityRequirement]", function()
         },
       }
     }, common.create_mt("openapi"))
+    openapi.get_trace = function() return "" end
     local requirements_spec = { nonexistingAuth = {} }
 
     local result, err = securityRequirement(requirements_spec, nil, openapi)
-    assert.equal("securityScheme not found: #/components/securitySchemes/nonexistingAuth", err)
+    assert.equal("securityScheme not found: #/components/securitySchemes/nonexistingAuth (origin: openapi:securityRequirement)", err)
     assert.is_nil(result)
   end)
 
@@ -71,10 +73,11 @@ describe("[securityRequirement]", function()
         },
       }
     }, common.create_mt("openapi"))
+    openapi.get_trace = function() return "" end
     local requirements_spec = { petstoreAuth = {} }
 
     local result, err = securityRequirement(requirements_spec, nil, openapi)
-    assert.equal("a securityScheme object expects a table as spec, but got string", err)
+    assert.equal("a securityScheme object expects a table as spec, but got string (origin: openapi:securityRequirement:securityScheme[petstoreAuth])", err)
     assert.is_nil(result)
   end)
 

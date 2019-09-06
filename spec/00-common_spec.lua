@@ -1,3 +1,4 @@
+_G._TEST = true
 local common = require "openapi2kong.common"
 local openapi = require "openapi2kong.openapi"
 

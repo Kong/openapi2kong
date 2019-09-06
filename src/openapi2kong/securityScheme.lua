@@ -3,6 +3,11 @@ local TYPE_NAME = ({...})[1]:match("openapi2kong%.([^%.]+)$")  -- grab type-name
 local mt = require("openapi2kong.common").create_mt(TYPE_NAME)
 
 
+function mt:get_trace()
+  return self.scheme_name
+end
+
+
 function mt:validate()
 
   if type(self.spec) ~= "table" then
@@ -80,7 +85,7 @@ local function parse(scheme_name, scopes, spec, options, parent)
   do
     local ok, err = self:dereference()
     if not ok then
-      return ok, err
+      return ok, self:log_message(err)
     end
     -- prevent accidental access to non-dereferenced spec table
     spec = nil -- luacheck: ignore
@@ -88,7 +93,7 @@ local function parse(scheme_name, scopes, spec, options, parent)
 
   local ok, err = self:validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   if self.spec.type == "oauth2" then
@@ -106,7 +111,7 @@ local function parse(scheme_name, scopes, spec, options, parent)
 
   ok, err = self:post_validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   return self

@@ -1,3 +1,4 @@
+_G._TEST = true
 local header = require "openapi2kong.header"
 
 assert:set_parameter("TableFormatLevel", 5)

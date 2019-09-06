@@ -1,3 +1,4 @@
+_G._TEST = true
 local parameters = require "openapi2kong.parameters"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,7 +7,7 @@ describe("[parameters]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = parameters("lalala", nil, {})
-    assert.equal("a parameters object expects a table as spec, but got string", err)
+    assert.equal("a parameters object expects a table as spec, but got string (origin: PARENT:parameters)", err)
     assert.falsy(ok)
   end)
 
@@ -32,7 +33,7 @@ describe("[parameters]", function()
 
   it("rejects a bad parameter", function()
     local ok, err = parameters({ [1] = 123 }, nil, {})
-    assert.equal("a parameter object expects a table as spec, but got number", err)
+    assert.equal("a parameter object expects a table as spec, but got number (origin: PARENT:parameters:parameter[<bad spec: number>])", err)
     assert.falsy(ok)
   end)
 

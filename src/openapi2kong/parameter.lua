@@ -17,6 +17,17 @@ local IGNORE_HEADERS = {  -- header parameters to ignore
 }
 
 
+function mt:get_trace()
+  if type(self.spec) ~= "nil" and
+     type(self.spec) ~= "table" then
+      return "<bad spec: " .. type(self.spec) ..">"
+  end
+  -- Parameter is also used for the Header implementation. In the latter case
+  -- there is no `spec.name`, but a `name` property on the object itself
+  return self.spec.name or self.name
+end
+
+
 function mt:validate()
   local spec = self.spec
 
@@ -100,7 +111,7 @@ local function parse(spec, options, parent)
   do
     local ok, err = self:dereference()
     if not ok then
-      return ok, err
+      return ok, self:log_message(err)
     end
     -- prevent accidental access to non-dereferenced spec table
     spec = nil -- luacheck: ignore
@@ -108,7 +119,8 @@ local function parse(spec, options, parent)
 
   local ok, err = self:validate()
   if not ok then
-    return ok, err
+    -- if the error is "ignore" we do not append a log-trace to it
+    return ok, err == "ignore" and err or self:log_message(err)
   end
 
   -- required defaults to false, for path is must be true, but that is part
@@ -139,7 +151,7 @@ local function parse(spec, options, parent)
                  self["in"] == "cookie" and "form" or
                  self["in"] == "header" and "simple"
     if not IN_TYPES[self["in"]][self.style] then
-      return nil, ("style '%s' is not valid for a '%s' parameter"):format(self.style, self["in"])
+      return nil, self:log_message(("style '%s' is not valid for a '%s' parameter"):format(self.style, self["in"]))
     end
 
     -- explode
@@ -176,7 +188,7 @@ local function parse(spec, options, parent)
 
   ok, err = self:post_validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   return self

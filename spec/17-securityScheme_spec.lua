@@ -1,3 +1,4 @@
+_G._TEST = true
 local securityScheme = require "openapi2kong.securityScheme"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,19 +7,19 @@ describe("[securityScheme]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = securityScheme("petstoreAuth", {}, "lalala", nil, {})
-    assert.equal("a securityScheme object expects a table as spec, but got string", err)
+    assert.equal("a securityScheme object expects a table as spec, but got string (origin: PARENT:securityScheme[petstoreAuth])", err)
     assert.falsy(ok)
   end)
 
   it("requires a string parameter as scheme_name", function()
     local ok, err = securityScheme(123, {}, {}, nil, {})
-    assert.equal("a securityScheme object expects a string as scheme_name, but got number", err)
+    assert.equal("a securityScheme object expects a string as scheme_name, but got number (origin: PARENT:securityScheme[123])", err)
     assert.falsy(ok)
   end)
 
   it("requires a table parameter as scopes", function()
     local ok, err = securityScheme("petstoreAuth", "lalala", {}, nil, {})
-    assert.equal("a securityScheme object expects a table as scopes, but got string", err)
+    assert.equal("a securityScheme object expects a table as scopes, but got string (origin: PARENT:securityScheme[petstoreAuth])", err)
     assert.falsy(ok)
   end)
 
@@ -32,7 +33,7 @@ describe("[securityScheme]", function()
           name = 123,
           ["in"] = "header",
         }, nil, {})
-      assert.equal("a securityScheme object of type apiKey expects a string as name property, but got number", err)
+      assert.equal("a securityScheme object of type apiKey expects a string as name property, but got number (origin: PARENT:securityScheme[petstoreAuth])", err)
       assert.falsy(ok)
     end)
 
@@ -42,7 +43,7 @@ describe("[securityScheme]", function()
           name = "x-my-auth",
           ["in"] = "invalid",
         }, nil, {})
-      assert.equal("a securityScheme object of type apiKey expects a proper in property, but got invalid", err)
+      assert.equal("a securityScheme object of type apiKey expects a proper in property, but got invalid (origin: PARENT:securityScheme[petstoreAuth])", err)
       assert.falsy(ok)
     end)
 
@@ -67,7 +68,7 @@ describe("[securityScheme]", function()
           type = "http",
           scheme = 123,
         }, nil, {})
-      assert.equal("a securityScheme object of type http expects a string as scheme property, but got number", err)
+      assert.equal("a securityScheme object of type http expects a string as scheme property, but got number (origin: PARENT:securityScheme[petstoreAuth])", err)
       assert.falsy(ok)
     end)
 
@@ -91,7 +92,7 @@ describe("[securityScheme]", function()
           type = "oauth2",
           flows = 123,
         }, nil, {})
-      assert.equal("a securityScheme object of type oauth2 expects a table as flows property, but got number", err)
+      assert.equal("a securityScheme object of type oauth2 expects a table as flows property, but got number (origin: PARENT:securityScheme[petstoreAuth])", err)
       assert.falsy(ok)
     end)
 
@@ -100,7 +101,7 @@ describe("[securityScheme]", function()
           type = "oauth2",
           flows = {},
         }, nil, {})
-      assert.equal("a securityScheme object of type oauth2 expects at least 1 entry in the flows property", err)
+      assert.equal("a securityScheme object of type oauth2 expects at least 1 entry in the flows property (origin: PARENT:securityScheme[petstoreAuth])", err)
       assert.falsy(ok)
     end)
 
@@ -131,7 +132,7 @@ describe("[securityScheme]", function()
           type = "openIdConnect",
           openIdConnectUrl = 123,
         }, nil, {})
-      assert.equal("a securityScheme object of type openIdConnect expects a string as openIdConnectUrl property, but got number", err)
+      assert.equal("a securityScheme object of type openIdConnect expects a string as openIdConnectUrl property, but got number (origin: PARENT:securityScheme[petstoreAuth])", err)
       assert.falsy(ok)
     end)
 

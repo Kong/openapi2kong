@@ -1,10 +1,11 @@
+_G._TEST = true
 local paths = require "openapi2kong.paths"
 
 describe("[paths]", function()
 
   it("requires a table parameter", function()
     local ok, err = paths("lalala", nil, {})
-    assert.equal("a paths object expects a table, but got string", err)
+    assert.equal("a paths object expects a table, but got string (origin: PARENT:paths)", err)
     assert.falsy(ok)
   end)
 

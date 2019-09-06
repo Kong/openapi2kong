@@ -2,6 +2,15 @@ local TYPE_NAME = ({...})[1]:match("openapi2kong%.([^%.]+)$")  -- grab type-name
 
 local mt = require("openapi2kong.common").create_mt(TYPE_NAME)
 
+function mt:get_trace()
+  -- Each object must implement `get_trace` to return the named element of the
+  -- object. It can return an empty string for generic collections, but should
+  -- return the human identifiable id where possible.
+  -- eg. for `paths` return ""
+  --     for `paths["/some/path"]` return "/some/path"
+  print("TODO: implement ", TYPE_NAME)
+end
+
 
 function mt:validate()
 
@@ -33,7 +42,7 @@ print("TODO: implement ", TYPE_NAME)
   do
     local ok, err = self:dereference()
     if not ok then
-      return ok, err
+      return ok, self:log_message(err)
     end
     -- prevent accidental access to non-dereferenced spec table
     spec = nil -- luacheck: ignore
@@ -41,7 +50,7 @@ print("TODO: implement ", TYPE_NAME)
 
   local ok, err = self:validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   for _, property in ipairs { "servers", "paths" } do
@@ -59,7 +68,7 @@ print("TODO: implement ", TYPE_NAME)
 
   ok, err = self:post_validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   return self

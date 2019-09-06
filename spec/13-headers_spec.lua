@@ -1,10 +1,11 @@
+_G._TEST = true
 local headers = require "openapi2kong.headers"
 
 describe("[headers]", function()
 
   it("requires a table parameter", function()
     local ok, err = headers("lalala", nil, {})
-    assert.equal("a headers object expects a table, but got string", err)
+    assert.equal("a headers object expects a table, but got string (origin: PARENT:headers)", err)
     assert.falsy(ok)
   end)
 
