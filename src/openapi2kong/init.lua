@@ -452,24 +452,24 @@ local function convert_paths(openapi, options)
       do -- check security plugins required
         local requirements, err = operation_obj:get_security()
         if (not requirements) and err ~= "not found" then
-          return nil, err
+          return nil, operation_obj:log_message(err)
         end
 
         if requirements and #requirements > 0 then
           if #requirements > 1 then
-            return nil, "maximum of 1 Security Requirement supported, got " .. #requirements
+            return nil, operation_obj:log_message("maximum of 1 Security Requirement supported, got " .. #requirements)
           end
 
           local security_requirement = requirements[1]
           if #security_requirement > 1 then
-            return nil, "maximum of 1 Security Scheme supported, got " .. #security_requirement
+            return nil, operation_obj:log_message("maximum of 1 Security Scheme supported, got " .. #security_requirement)
           end
 
           local plugin_conf = registry_get(requirements)
           if not plugin_conf then
             plugin_conf, err = create_security_plugin(security_requirement[1])
             if not plugin_conf then
-              return nil, err
+              return nil, operation_obj:log_message(err)
             end
 
             registry_add(requirements, plugin_conf)
@@ -498,7 +498,7 @@ local function convert_paths(openapi, options)
           local err
           request_validator_config.config, err = generate_validation_config(operation_obj)
           if not request_validator_config.config then
-            return nil, err
+            return nil, operation_obj:log_message(err)
           end
 
           -- anything to validate?

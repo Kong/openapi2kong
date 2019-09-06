@@ -3,6 +3,11 @@ local TYPE_NAME = ({...})[1]:match("openapi2kong%.([^%.]+)$")  -- grab type-name
 local mt = require("openapi2kong.common").create_mt(TYPE_NAME)
 
 
+function mt:get_trace()
+  return self.flow_type
+end
+
+
 function mt:validate()
 
   if type(self.spec) ~= "table" then
@@ -68,7 +73,7 @@ local function parse(flow_type, spec, options, parent)
 
   local ok, err = self:validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
 
@@ -76,7 +81,7 @@ local function parse(flow_type, spec, options, parent)
 
   ok, err = self:post_validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   return self

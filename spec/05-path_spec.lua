@@ -1,3 +1,4 @@
+_G._TEST = true
 local path = require "openapi2kong.path"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,7 +7,7 @@ describe("[path]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = path("/", "lalala", nil, {})
-    assert.equal("a path object expects a table as spec, but got string", err)
+    assert.equal("a path object expects a table as spec, but got string (origin: PARENT:path[/])", err)
     assert.falsy(ok)
   end)
 
@@ -16,7 +17,7 @@ describe("[path]", function()
 
     it("requires a string parameter", function()
       local ok, err = path(12, {}, nil, {})
-      assert.equal("a path object expects a string as path, but got number", err)
+      assert.equal("a path object expects a string as path, but got number (origin: PARENT:path[12])", err)
       assert.falsy(ok)
     end)
 

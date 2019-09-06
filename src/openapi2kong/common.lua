@@ -410,6 +410,63 @@ end
 
 
 
+function methods:get_trace()
+  -- to be overridden, see `get_full_trace()` below
+  error("type '" .. tostring(self.type) .. "' didn't implement it's own 'get_trace' method")
+end
+
+
+
+do
+  local function create_full_trace(self)
+    local my_type = self.type
+    local my_trace = tostring(self:get_trace())
+
+    if my_trace == "" then
+      my_trace = my_type
+    else
+      my_trace = my_type .. "[" .. my_trace .. "]"
+    end
+
+    if my_type ~= "openapi" then
+      if self.parent.get_full_trace then
+        my_trace = self.parent:get_full_trace() .. ":" .. my_trace
+      else
+        assert(_G._TEST, "parent should have a get_full_trace method if we're not testing")
+        -- we're testing, inject a static parent string
+        my_trace = "PARENT:" .. my_trace
+      end
+    end
+
+    self.full_trace = my_trace
+    return self.full_trace
+  end
+
+  -- returns a string with the ID of the current element, so users can backtrace
+  -- errors to their input yaml/json file.
+  --
+  -- Each object must implement `get_trace` to return the named element of the
+  -- object. It can return an empty string for generic collections, but should
+  -- return the human identifiable id where possible.
+  -- eg. for `paths` return ""
+  --     for `paths["/some/path"]` return "/some/path"
+  --
+  -- Result:
+  -- "openapi[name]:paths:path[/some/path]:method[GET]"
+  function methods:get_full_trace()
+    return self.full_trace or create_full_trace(self)
+  end
+end
+
+
+
+-- return the same message with the trace injected
+function methods:log_message(msg)
+  return msg .. " (origin: " .. self:get_full_trace() .. ")"
+end
+
+
+
 -- create a metatable for a type, including common methods and a type name
 function M.create_mt(type_name)
   assert(type(type_name) == "string", "expected string, got " .. type(type_name))

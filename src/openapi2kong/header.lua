@@ -42,7 +42,7 @@ local function parse(name, spec, options, parent)
   do
     local ok, err = temp_header:dereference()
     if not ok then
-      return ok, err
+      return ok, temp_header:log_message(err)
     end
     -- prevent accidental access to non-dereferenced spec table
     spec = nil -- luacheck: ignore

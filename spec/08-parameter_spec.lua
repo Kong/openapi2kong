@@ -1,3 +1,4 @@
+_G._TEST = true
 local parameter = require "openapi2kong.parameter"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,7 +7,7 @@ describe("[parameter]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = parameter("lalala", nil, {})
-    assert.equal("a parameter object expects a table as spec, but got string", err)
+    assert.equal("a parameter object expects a table as spec, but got string (origin: PARENT:parameter[<bad spec: string>])", err)
     assert.falsy(ok)
   end)
 
@@ -61,7 +62,7 @@ describe("[parameter]", function()
         name = "param_name",
         schema = {},
       }, nil, {})
-    assert.equal("parameter.in cannot have value 'this is a bad one'", err)
+    assert.equal("parameter.in cannot have value 'this is a bad one' (origin: PARENT:parameter[param_name])", err)
     assert.is_nil(result)
   end)
 
@@ -73,7 +74,7 @@ describe("[parameter]", function()
         name = "param_name",
         schema = {},
       }, nil, {})
-    assert.equal("parameter.required must be true, if parameter.in == 'path'", err)
+    assert.equal("parameter.required must be true, if parameter.in == 'path' (origin: PARENT:parameter[param_name])", err)
     assert.is_nil(result)
   end)
 
@@ -87,7 +88,7 @@ describe("[parameter]", function()
           schema = {},
           content = {},
         }, nil, {})
-      assert.equal("parameter cannot have both schema and content properties", err)
+      assert.equal("parameter cannot have both schema and content properties (origin: PARENT:parameter[param_name])", err)
       assert.is_nil(result)
     end)
 
@@ -99,7 +100,7 @@ describe("[parameter]", function()
           --schema = {},
           --content = {},
         }, nil, {})
-      assert.equal("parameter must have either schema or content property", err)
+      assert.equal("parameter must have either schema or content property (origin: PARENT:parameter[param_name])", err)
       assert.is_nil(result)
     end)
 
@@ -263,7 +264,7 @@ describe("[parameter]", function()
         name = "param_name",
         schema = "should have been a table!",
       }, nil, {})
-    assert.equal("a schema object expects a table as spec, but got string", err)
+    assert.equal("a schema object expects a table as spec, but got string (origin: PARENT:parameter[param_name]:schema)", err)
     assert.is_nil(result)
   end)
 
@@ -287,7 +288,7 @@ describe("[parameter]", function()
         name = "param_name",
         content = { ["application/json"] = "should have been a table!" },
       }, nil, {})
-    assert.equal("a mediaType object expects a table as spec, but got string", err)
+    assert.equal("a mediaType object expects a table as spec, but got string (origin: PARENT:parameter[param_name]:mediaType[application/json])", err)
     assert.is_nil(result)
   end)
 

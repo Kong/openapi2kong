@@ -3,6 +3,11 @@ local TYPE_NAME = ({...})[1]:match("openapi2kong%.([^%.]+)$")  -- grab type-name
 local mt = require("openapi2kong.common").create_mt(TYPE_NAME)
 
 
+function mt:get_trace()
+  return ""
+end
+
+
 function mt:validate()
 
   if type(self.spec) ~= "table" then
@@ -36,7 +41,7 @@ local function parse(spec, options, parent)
 
   local ok, err = self:validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   local new_securityScheme = require("openapi2kong.securityScheme")
@@ -44,7 +49,7 @@ local function parse(spec, options, parent)
   for scheme_name, scopes_spec in pairs(self.spec) do
     local scheme_spec = ((self:get_openapi().spec.components or {}).securitySchemes or {})[scheme_name]
     if not scheme_spec then
-      return nil, "securityScheme not found: #/components/securitySchemes/" .. scheme_name
+      return nil, self:log_message("securityScheme not found: #/components/securitySchemes/" .. scheme_name)
     end
 
     local scheme_obj, err = new_securityScheme(scheme_name, scopes_spec, scheme_spec, options, self)
@@ -57,7 +62,7 @@ local function parse(spec, options, parent)
 
   ok, err = self:post_validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   return self

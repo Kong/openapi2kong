@@ -6,6 +6,15 @@ local url = require "socket.url"
 local mt = require("openapi2kong.common").create_mt(TYPE_NAME)
 
 
+function mt:get_trace()
+  if type(self.spec) ~= "nil" and
+     type(self.spec) ~= "table" then
+      return "<bad spec: " .. type(self.spec) ..">"
+  end
+  return self.spec.url
+end
+
+
 function mt:validate()
 
   if type(self.spec) ~= "table" then
@@ -15,10 +24,6 @@ function mt:validate()
   if type(self.spec.url) ~= "string" then
     return nil, ("a %s object expects a string as url property, but got %s"):format(TYPE_NAME, type(self.spec.url))
   end
-
---  if self.spec.url:find("{.-}") then
---    return nil, "server variables are not supported: " .. self.spec.url
---  end
 
   return true
 end
@@ -43,7 +48,7 @@ local function parse(spec, options, parent)
 
   local ok, err = self:validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   local server_url = spec.url:gsub("{(.-)}", function(param_name)
@@ -56,7 +61,7 @@ local function parse(spec, options, parent)
 
   self.parsed_url, err = url.parse(server_url)
   if not self.parsed_url then
-    return nil, err
+    return nil, self:log_message(err)
   end
 
   self.parsed_url.authority = nil -- drop because it also contains the port
@@ -67,7 +72,7 @@ local function parse(spec, options, parent)
 
   ok, err = self:post_validate()
   if not ok then
-    return ok, err
+    return ok, self:log_message(err)
   end
 
   return self

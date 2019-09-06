@@ -1,10 +1,11 @@
+_G._TEST = true
 local servers = require "openapi2kong.servers"
 
 describe("[servers]", function()
 
   it("requires a table parameter", function()
     local ok, err = servers("lalala", nil, {})
-    assert.equal("a servers object expects a table, but got string", err)
+    assert.equal("a servers object expects a table, but got string (origin: PARENT:servers)", err)
     assert.falsy(ok)
   end)
 
@@ -50,7 +51,7 @@ describe("[servers]", function()
         url = "http://server2.com/path2",
       },
     }, nil, {})
-    assert.equal("server urls should not differ other than host or port", err)
+    assert.equal("server urls should not differ other than host or port (origin: PARENT:servers)", err)
     assert.is_nil(ok)
   end)
 

@@ -1,3 +1,4 @@
+_G._TEST = true
 local common = require "openapi2kong.common"
 local operation = require "openapi2kong.operation"
 
@@ -7,7 +8,7 @@ describe("[operation]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = operation("get", "lalala", nil, {})
-    assert.equal("a operation object expects a table as spec, but got string", err)
+    assert.equal("a operation object expects a table as spec, but got string (origin: PARENT:operation[get])", err)
     assert.falsy(ok)
   end)
 
@@ -17,7 +18,7 @@ describe("[operation]", function()
 
     it("requires a string parameter", function()
       local ok, err = operation(12, {}, nil, {})
-      assert.equal("a operation object expects a string as method, but got number", err)
+      assert.equal("a operation object expects a string as method, but got number (origin: PARENT:operation[12])", err)
       assert.falsy(ok)
     end)
 
@@ -35,7 +36,7 @@ describe("[operation]", function()
 
     it("fails on bad parameters", function()
       local ok, err = operation("get", { parameters = "" }, nil, {})
-      assert.equal("a parameters object expects a table as spec, but got string", err)
+      assert.equal("a parameters object expects a table as spec, but got string (origin: PARENT:operation[get]:parameters)", err)
       assert.falsy(ok)
     end)
 
@@ -53,7 +54,7 @@ describe("[operation]", function()
 
     it("fails on bad parameters", function()
       local ok, err = operation("get", { requestBody = "" }, nil, {})
-      assert.equal("a requestBody object expects a table as spec, but got string", err)
+      assert.equal("a requestBody object expects a table as spec, but got string (origin: PARENT:operation[get]:requestBody)", err)
       assert.falsy(ok)
     end)
 
@@ -71,7 +72,7 @@ describe("[operation]", function()
 
     it("fails on bad parameters", function()
       local ok, err = operation("get", { security = "" }, nil, {})
-      assert.equal("a operation object expects a table as security property, but got string", err)
+      assert.equal("a operation object expects a table as security property, but got string (origin: PARENT:operation[get])", err)
       assert.falsy(ok)
     end)
 
@@ -117,7 +118,7 @@ describe("[operation]", function()
 
     it("fails on bad parameters", function()
       local ok, err = operation("get", { servers = "" }, nil, {})
-      assert.equal("a servers object expects a table, but got string", err)
+      assert.equal("a servers object expects a table, but got string (origin: PARENT:operation[get]:servers)", err)
       assert.falsy(ok)
     end)
 

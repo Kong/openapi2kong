@@ -1,3 +1,4 @@
+_G._TEST = true
 local openapi = require "openapi2kong.openapi"
 
 assert:set_parameter("TableFormatLevel", 5)
@@ -6,13 +7,13 @@ describe("[openapi]", function()
 
   it("requires a table parameter", function()
     local ok, err = openapi("lalala")
-    assert.equal("a openapi object expects a table, but got string", err)
+    assert.equal("a openapi object expects a table, but got string (origin: openapi)", err)
     assert.falsy(ok)
   end)
 
   it("requires an openapi version", function()
     local ok, err = openapi({})
-    assert.equal("missing openapi version", err)
+    assert.equal("missing openapi version (origin: openapi)", err)
     assert.falsy(ok)
   end)
 
@@ -20,7 +21,7 @@ describe("[openapi]", function()
     local ok, err = openapi({
       openapi = "2.0"
     })
-    assert.equal("unsupported major version: 2. OAS major version v3 supported", err)
+    assert.equal("unsupported major version: 2. OAS major version v3 supported (origin: openapi)", err)
     assert.falsy(ok)
 
     local result, err = openapi({
@@ -60,7 +61,7 @@ describe("[openapi]", function()
       paths = { ["/"] = {} },
       security = "lalala",
     })
-    assert.equal("a openapi object expects a table as security property, but got string", err)
+    assert.equal("a openapi object expects a table as security property, but got string (origin: openapi)", err)
     assert.falsy(ok)
   end)
 
@@ -70,7 +71,7 @@ describe("[openapi]", function()
       servers = { "http://server.com/path" },
       --paths = { ["/"] = {} },
     })
-    assert.equal("missing paths property", err)
+    assert.equal("missing paths property (origin: openapi)", err)
     assert.falsy(ok)
   end)
 
@@ -80,7 +81,7 @@ describe("[openapi]", function()
       servers = { "http://server.com/path" },
       paths = {},
     })
-    assert.equal("paths needs at least 1 path entry", err)
+    assert.equal("paths needs at least 1 path entry (origin: openapi)", err)
     assert.falsy(ok)
   end)
 
@@ -91,7 +92,7 @@ describe("[openapi]", function()
       paths = { ["/"] = {} },
       ["x-kong-unsupported-one"] = { "this should fail" }
     })
-    assert.equal("Not a valid Kong extension: x-kong-unsupported-one", err)
+    assert.equal("Not a valid Kong extension: x-kong-unsupported-one (origin: openapi)", err)
     assert.is_nil(result)
   end)
 
@@ -118,7 +119,7 @@ describe("[openapi]", function()
       },
       paths = { ["/"] = {} },
     })
-    assert.equal("Kong extension 'x-kong-upstream-defaults' cannot be used on type 'server'", err)
+    assert.equal("Kong extension 'x-kong-upstream-defaults' cannot be used on type 'server' (origin: openapi)", err)
     assert.is_nil(result)
   end)
 

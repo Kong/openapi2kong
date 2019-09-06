@@ -1,3 +1,4 @@
+_G._TEST = true
 local openapi = require "openapi2kong.openapi"
 local schema = require "openapi2kong.schema"
 local deepcopy = require("pl.tablex").deepcopy
@@ -8,7 +9,7 @@ describe("[schema]", function()
 
   it("requires a table parameter as spec", function()
     local ok, err = schema("lalala", nil, {})
-    assert.equal("a schema object expects a table as spec, but got string", err)
+    assert.equal("a schema object expects a table as spec, but got string (origin: PARENT:schema)", err)
     assert.falsy(ok)
   end)
 
