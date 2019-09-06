@@ -303,9 +303,11 @@ do
       local tokenUrl
       local refreshUrl
 
-      for flow, flow_obj in pairs(securityScheme.flows) do
+      for _, flow_obj in ipairs(securityScheme.flows) do
+        local flow = flow_obj.flow_type
 
         if     flow == "password"          then flow = "password"
+        --elseif flow == "implicit"          then flow = "???"
         elseif flow == "clientCredentials" then flow = "client_credentials"
         elseif flow == "authorizationCode" then flow = "authorization_code"
         else return nil, "unsupported flow: " .. flow
