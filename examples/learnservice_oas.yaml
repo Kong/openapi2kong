@@ -66,6 +66,14 @@ tags:
 - name: activities
   description: Operations for quiz, track activities, video watching activities
 
+
+x-kong-route-defaults:
+  # the defaults for the Kong routes generated from 'paths' below
+  # see https://docs.konghq.com/1.2.x/admin-api/#route-object
+  preserve_host: true
+  # NOTE: these defaults can also be added to "path" and "operation" objects
+
+
 paths:
   "/tracks":
     x-kong-name: tracks

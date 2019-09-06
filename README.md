@@ -83,6 +83,9 @@ This similarly applies to the `service` object.
 Routes are generated for each `Operation` object. They are defined as regex
 routes and must have an exact match.
 
+To set default for Routes, use the `x-kong-route-defaults` extension. The
+inheritance/fallback order is identical to the Service defaults.
+
 # Entity naming
 
 Entity naming is relevant to be able to match OpenAPI spec content with the
