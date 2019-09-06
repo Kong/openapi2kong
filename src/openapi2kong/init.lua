@@ -442,6 +442,7 @@ local function convert_paths(openapi, options)
       route.paths = { path }
       route.methods = { operation_obj.method:upper() }
       route.strip_path = false
+      route.plugins = route.plugins or {}
       route.tags = get_tags(options.tags, route.tags)
       --TODO: set regex_priority property to match in proper order??
 
@@ -477,7 +478,6 @@ local function convert_paths(openapi, options)
             registry_add(requirements, plugin_conf)
           end
 
-          route.plugins = route.plugins or {}
           route.plugins[#route.plugins+1] = plugin_conf
         end
       end -- check security plugins required
@@ -485,7 +485,6 @@ local function convert_paths(openapi, options)
       local request_validator_config
       do  -- check other plugins to be added
         for plugin_name, plugin_table in pairs(operation_obj:get_plugins()) do
-          route.plugins = route.plugins or {}
           route.plugins[#route.plugins+1] = plugin_table
 
           -- if it is a validator without config, then we need to hold on to it
@@ -520,6 +519,9 @@ local function convert_paths(openapi, options)
         end
       end -- request validation
 
+      if #route.plugins == 0 then
+        route.plugins = nil
+      end
     end  -- for: Operations
 
   end  -- for: Paths
