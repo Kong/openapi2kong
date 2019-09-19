@@ -118,7 +118,7 @@ local function parse(spec, options, parent)
 
   local self = setmetatable({
     spec = assert(spec, "spec argument is required"),
-    parent = parent, --assert(parent, "parent argument is required"),
+    parent = parent, -- Note: openapi is the only object with an OPTIONAL parent
     options = options,
   }, mt)
 
