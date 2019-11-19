@@ -468,7 +468,7 @@ paths:
               - userIds
               properties:
                 userId:
-                  "$ref": parameterValue
+                  "$ref": "#/components/schemas/parameterValue"
                 userIds:
                   type: array
                   minItems: 1
