@@ -6,6 +6,7 @@
 - fix (sort of) in unsupported Oauth2 security flows, handle an array
   instead of an object.
 - do not add plugin array to routes if empty, to improve decK compatibility
+- fix body-validation; is now properly added
 
 ## 0.1.0
 

@@ -387,10 +387,11 @@ local function generate_validation_config(operation_obj)
   -- Body
   local body_schema
   if operation_obj.requestBody then
-    for _, media_type in ipairs(operation_obj.requestBody) do
+    assert(operation_obj.requestBody.content, "content property is missing!")
+    for _, media_type in ipairs(operation_obj.requestBody.content) do
       if media_type.mediatype == "application/json" then
         assert(not body_schema, "body_schema was already set!")
-        body_schema = assert(cjson.encode(media_type.schema:get_dereferenced_schema()))
+        body_schema = assert(cjson.encode(assert(media_type.schema:get_dereferenced_schema())))
       else
         return nil, ("Body validation supports only 'application/json', " ..
                      "not '%s'"):format(tostring(media_type.mediatype))
