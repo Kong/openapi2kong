@@ -116,7 +116,7 @@ paths:
         # See #/components/securitySchemes for the definition
         # NOTE: only a single scheme per security object is supported!
       x-kong-plugin-file-log: 
-        "$ref": "#/components/kong/plugins/log_to_file"
+        "$ref": "#/components/x-kong/plugins/log_to_file"
       # Adding another plugin, but in this case we use a reference so any updates
       # to the configuration can be done in a single place.
       parameters:
@@ -513,7 +513,7 @@ paths:
                   items:
                     "$ref": "#/components/schemas/parameterValue"
 components:
-  kong:
+  x-kong:
     # reusable Kong plugin configurations
     plugins:
       log_to_file:
