@@ -1,5 +1,5 @@
 
-## 0.x.x Unreleased
+## 0.2.0 22-Nov-2019
 
 - added a trace to errors to identify to originating yaml/json element that
   caused the error.
