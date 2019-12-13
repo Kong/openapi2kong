@@ -11,6 +11,7 @@ See [CHANGELOG.md](https://github.com/Kong/openapi2kong/blob/master/CHANGELOG.md
 It can be installed from the repo using LuaRocks
 
 ```shell
+# NOTE: this is meant to run an a Kong system, not on a standalone Lua installation
 $ git clone https://github.com/kong/openapi2kong
 $ cd openapi2kong
 $ luarocks make
