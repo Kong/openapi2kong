@@ -71,7 +71,7 @@ end
 
 local registry_add, registry_get
 do
-  local registry = setmetatable({}, { __mode = "kv" })
+  local registry = setmetatable({}, { __mode = "k" })
 
   --- Add an entry to the generation registry.
   -- The registry keeps track of what Kong entities were generated from OpenAPI
