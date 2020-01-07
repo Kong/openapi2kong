@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.x xx-Jan-2020
+## 0.2.1 7-Jan-2020
 
 - fix: a weak table caused premature garbage collection of entries still
   required
