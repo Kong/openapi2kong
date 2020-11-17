@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 17-Nov-2020
+
+- add copyright headers
+
 ## 0.2.1 7-Jan-2020
 
 - fix: a weak table caused premature garbage collection of entries still

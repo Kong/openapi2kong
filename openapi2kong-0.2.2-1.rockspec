@@ -1,5 +1,5 @@
 package = "openapi2kong"
-version = "0.2.1-1"
+version = "0.2.2-1"
 source = {
    url = "git://github.com/kong/openapi2kong",
    branch = "master"
