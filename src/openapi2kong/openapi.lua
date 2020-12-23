@@ -137,6 +137,10 @@ local function parse(spec, options, parent)
   for _, property in ipairs { "servers", "paths" } do
     local create_type = require("openapi2kong." .. property)
     local sub_spec = self.spec[property]
+    if property == "servers" and sub_spec == nil then
+      -- no servers specified, use the default
+      sub_spec = {{ url = "/" }}
+    end
     if sub_spec then
       local new_obj, err = create_type(sub_spec, options, self)
       if not new_obj then

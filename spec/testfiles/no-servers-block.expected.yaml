@@ -1,0 +1,26 @@
+---
+services:
+- host: Simple_API_overview
+  path: /
+  tags:
+  - OAS3_import
+  - OAS3file_no-servers-block.yaml
+  name: Simple_API_overview
+  routes:
+  - methods:
+    - GET
+    strip_path: false
+    tags:
+    - OAS3_import
+    - OAS3file_no-servers-block.yaml
+    name: Simple_API_overview-path-get
+    paths:
+    - /v2$
+upstreams:
+- tags:
+  - OAS3_import
+  - OAS3file_no-servers-block.yaml
+  name: Simple_API_overview
+  targets: {}
+_format_version: '1.1'
+...

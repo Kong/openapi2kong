@@ -8,6 +8,15 @@
 local kong = require "openapi2kong"
 local utils = require "pl.utils"
 local cjson = require "cjson.safe"
+local lyaml = require "lyaml"
+
+
+
+-- Set this to 'true' to write the expected files, instead of validating them.
+-- Set to true, run the tests, and check the `git diff` for the expected changes
+local WRITE_FILES = false
+
+
 
 describe("[Kong conversion]", function()
 
@@ -20,24 +29,37 @@ describe("[Kong conversion]", function()
     "spec/testfiles/httpbin.yaml",
     "spec/testfiles/petstore.yaml",
     "spec/testfiles/security.yaml",
+    "spec/testfiles/no-servers-block.yaml",
   }
 
-  for _, filename in ipairs(files) do
-    it("parses " .. filename, function()
-      local kong_spec = assert(kong.convert_files(filename))
---      local expected = assert(utils.readfile(filename .. ".expected"))
---      expected = assert(cjson.decode(expected))
---      assert.same(expected, kong_spec)
-      assert(utils.writefile(filename .. ".expected", assert(cjson.encode(kong_spec))))
-    end)
+  if WRITE_FILES then
+    pending("WARNING: these tests have been disabled!!!", function() end)
+    -- set WRITE_FILES above to false to enable the tests
   end
 
   it("parses all-files-in-one", function()
     local kong_spec = assert(kong.convert_files(files))
---    local expected = assert(utils.readfile("spec/testfiles/all-files-in-one.expected"))
---    expected = assert(cjson.decode(expected))
---    assert.same(expected, kong_spec)
-    assert(utils.writefile("spec/testfiles/all-files-in-one.expected", cjson.encode(kong_spec)))
+    if not WRITE_FILES then
+      local expected = assert(utils.readfile("spec/testfiles/all-files-in-one.expected.yaml"))
+      expected = assert(lyaml.load(expected))
+      assert.same(expected, kong_spec)
+    else
+      assert(utils.writefile("spec/testfiles/all-files-in-one.expected.yaml", assert(lyaml.dump({ kong_spec }))))
+    end
   end)
+
+
+  for _, filename in ipairs(files) do
+    it("parses " .. filename, function()
+      local kong_spec = assert(kong.convert_files(filename))
+      if not WRITE_FILES then
+        local expected = assert(utils.readfile(filename:match("^(.+)%.yaml$") .. ".expected.yaml"))
+        expected = assert(lyaml.load(expected))
+        assert.same(expected, kong_spec)
+      else
+        assert(utils.writefile(filename:match("^(.+)%.yaml$") .. ".expected.yaml", assert(lyaml.dump({ kong_spec }))))
+      end
+    end)
+  end
 
 end)
