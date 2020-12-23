@@ -1,5 +1,9 @@
 # Changelog
 
+## unreleased
+
+- 'servers' block made optional
+
 ## 0.2.2 17-Nov-2020
 
 - add copyright headers

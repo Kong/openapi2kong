@@ -203,9 +203,11 @@ local function convert_servers(openapi, options)
 
     -- add targets
     for _, server in ipairs(servers) do
-      targets[#targets+1] = {
-        target = server.parsed_url.host .. ":" .. server.parsed_url.port,
-      }
+      if server.parsed_url.host then
+        targets[#targets+1] = {
+          target = server.parsed_url.host .. ":" .. server.parsed_url.port,
+        }
+      end
     end
 
     local upstream = get_upstream_defaults(servers)

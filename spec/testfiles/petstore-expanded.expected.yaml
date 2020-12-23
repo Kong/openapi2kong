@@ -1,0 +1,56 @@
+---
+services:
+- host: Swagger_Petstore
+  port: 80
+  path: /
+  protocol: http
+  name: Swagger_Petstore
+  routes:
+  - methods:
+    - POST
+    strip_path: false
+    tags:
+    - OAS3_import
+    - OAS3file_petstore-expanded.yaml
+    name: Swagger_Petstore-path-post
+    paths:
+    - /api/pets$
+  - methods:
+    - GET
+    strip_path: false
+    tags:
+    - OAS3_import
+    - OAS3file_petstore-expanded.yaml
+    name: Swagger_Petstore-path-get
+    paths:
+    - /api/pets$
+  - methods:
+    - DELETE
+    strip_path: false
+    tags:
+    - OAS3_import
+    - OAS3file_petstore-expanded.yaml
+    name: Swagger_Petstore-path_1-delete
+    paths:
+    - /api/pets/(?<id>\S+)$
+  - methods:
+    - GET
+    strip_path: false
+    tags:
+    - OAS3_import
+    - OAS3file_petstore-expanded.yaml
+    name: Swagger_Petstore-path_1-get
+    paths:
+    - /api/pets/(?<id>\S+)$
+  tags:
+  - OAS3_import
+  - OAS3file_petstore-expanded.yaml
+upstreams:
+- tags:
+  - OAS3_import
+  - OAS3file_petstore-expanded.yaml
+  name: Swagger_Petstore
+  targets:
+  - target: petstore.swagger.io:80
+_format_version: '1.1'
+...

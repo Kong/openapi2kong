@@ -1,0 +1,19 @@
+openapi: "3.0.0"
+info:
+  title: Simple API overview
+  version: v2
+# Test file without a servers block
+#servers:
+#  - url: http://backend.com/path
+paths:
+  /v2:
+    get:
+      operationId: getVersionDetailsv2
+      summary: Show API version details
+      responses:
+        '200':
+          description: |-
+            200 response
+        '203':
+          description: |-
+            203 response
