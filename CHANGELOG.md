@@ -1,6 +1,4 @@
-# Changelog
-
-## unreleased
+## 0.2.3 8-Feb-2021
 
 - 'servers' block made optional
 
