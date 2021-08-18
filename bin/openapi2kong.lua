@@ -6,9 +6,22 @@
 -- at https://konghq.com/enterprisesoftwarelicense/.
 -- [ END OF LICENSE 0867164ffc95e54f04670b5169c09574bdbd9bba ]
 
+setmetatable(_G, nil)  -- Suppress OpenResty warnings
+
 local kong = require "openapi2kong"
 local utils = require "pl.utils"
 local lapp = require "pl.lapp"
+
+warn("@on")  -- luacheck: ignore
+utils.raise_deprecation {
+  source = "Kong Enterprise",
+  message = "the 'openapi2kong' cli tool is deprecated, please " ..
+            "use Insomnia to generate Kong declarative configurations " ..
+            "from OAS files instead",
+  version_removed = "3.0.0.0",
+  deprecated_after = "2.5.0.0",
+  no_trace = true,
+}
 
 local args = lapp [[
 Usage: openapi2kong [OPTIONS] <input...>

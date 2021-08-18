@@ -1,3 +1,7 @@
+## 0.3.0 18-Aug-2021
+
+- add deprecation warning for removal in Kong 3.0.0
+
 ## 0.2.3 8-Feb-2021
 
 - 'servers' block made optional
