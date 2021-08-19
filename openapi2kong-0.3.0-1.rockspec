@@ -1,8 +1,8 @@
 package = "openapi2kong"
-version = "0.2.3-1"
+version = "0.3.0-1"
 source = {
    url = "git://github.com/kong/openapi2kong",
-   branch = "master"
+   branch = "0.3.0"
 }
 description = {
    summary = "Tool to convert OpenAPI specs into Kong declarative config format",
