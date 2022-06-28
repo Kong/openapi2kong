@@ -10,7 +10,7 @@ description = {
       Reads an OpenAPI spec and outputs a file with Upstream, Service, Route
       definitions to be imported in Kong.
    ]],
-   license = "Proprietary",
+   license = "Apache 2.0",
    homepage = "https://github.com/Kong/openapi2kong"
 }
 dependencies = {
