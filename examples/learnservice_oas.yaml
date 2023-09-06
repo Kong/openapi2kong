@@ -115,7 +115,7 @@ paths:
         - openId: [ "scope3" ]
         # See #/components/securitySchemes for the definition
         # NOTE: only a single scheme per security object is supported!
-      x-kong-plugin-file-log: 
+      x-kong-plugin-file-log:
         "$ref": "#/components/x-kong/plugins/log_to_file"
       # Adding another plugin, but in this case we use a reference so any updates
       # to the configuration can be done in a single place.
@@ -542,7 +542,7 @@ components:
         config:
           key_names: [ "mykey", "yourkey" ]
           # the "key_names" will be merged with the name specified in OAS above
-          # so effectively keynames that will be accepted are now: "apikey", 
+          # so effectively keynames that will be accepted are now: "apikey",
           # "mykey", and "yourkey".
           hide_credentials: true
           run_on_preflight: false
@@ -557,7 +557,7 @@ components:
           # on the security requirement. So if an Operation specifies a securty
           # requirement with "scope3", then the effective scopes applied will
           # be "scope1", "scope2", and "scope3".
-  
+
   schemas:
     Track:
       type: object
@@ -783,10 +783,7 @@ components:
         notStarted:
           type: integer
     parameterValue:
-      anyOf:
-      - "$ref": "#/components/schemas/symbol"
-      - "$ref": "#/components/schemas/sanitized_number"
-      - "$ref": "#/components/schemas/symbolArray"
+      "$ref": "#/components/schemas/symbol"
     dateOrTimestamp:
       oneOf:
       - type: string
